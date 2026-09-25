@@ -1,0 +1,27 @@
+{
+  "name": "citizen-bank-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Citizen Bank mobile app — installable PWA with the Citizen AI voice assistant. Talks to Citizen Bank Core.",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "next": "^15.5.26",
+    "react": "^19.1.9",
+    "react-dom": "^19.1.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "animejs": "^3.2.2",
+    "typescript": "^5.9.3"
+  }
+}
