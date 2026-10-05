@@ -12,7 +12,7 @@ const fields:Record<string,{key:string;label:string;type?:string;auto?:string}[]
 export default function AccessPanel(){
  const path=usePathname(),dialog=useRef<HTMLDialogElement>(null);
  const [open,setOpen]=useState(false),[assessment,setAssessment]=useState<Assessment|null>(null),[profile,setProfile]=useState<Profile|null>(null),[values,setValues]=useState<Record<string,string>>({}),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[reauth,setReauth]=useState(false);
- const visible=!path.startsWith('/login') && !path.startsWith('/register');
+ const visible=!path.startsWith('/login') && !path.startsWith('/register') && !path.startsWith('/activate-admin');
  const [submitted,setSubmitted]=useState(false);
  const [canReview,setCanReview]=useState(false);
  async function request(url:string,data?:unknown){const r=await fetch(url,{method:data===undefined?'GET':'POST',headers:data===undefined?{}:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data),cache:'no-store'});const j=await r.json();if(!r.ok){if(j.code==='KYC_REQUIRED'){setAssessment(j.kyc);return null;}throw new Error(j.error || 'Please try again.');}return j;}
