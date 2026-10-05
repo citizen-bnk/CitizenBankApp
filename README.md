@@ -9,7 +9,8 @@ and typed requests, Accounts, Payments, Cards and More. It's wired to live data 
   beneficiaries, card orders, scheduling, scan-to-pay QR). Each one ends with an explicit **Confirm** step.
 - **Citizen AI** (Claude, via Core) answers questions and pre-fills flows from requests like "send Thabo M200". Voice
   input uses the browser's speech recognition. Voice replies use ElevenLabs through Core, or fall back to the
-  prototype's animated voice.
+  browser speech synthesis. Captions advance when playback ends, the orb reacts to ElevenLabs audio,
+  and interrupting a reply stops its audio and remaining captions.
 - Money is in **maloti (M / LSL)**. Outside Lesotho, the balance card also shows an indicative local-currency amount.
 - Session timeout after 5 minutes of inactivity. Service worker caches the app shell only, never banking data.
 
@@ -25,6 +26,19 @@ and typed requests, Accounts, Payments, Cards and More. It's wired to live data 
 On a phone, open the URL and choose **Add to Home Screen** to install it.
 
 ## Local development
+
+On Windows PowerShell, run against the existing demo backend:
+
+```powershell
+npm ci
+$env:CORE_API_URL = 'https://citizenbankcore.vercel.app'
+npm run dev
+```
+
+`npm test`, `npm run typecheck`, and `npm run build` verify changes. GitHub Actions runs these checks
+on pushes and pull requests. The existing Vercel Git integration publishes branch previews and deploys `main`.
+Full conversational replies require a working `ANTHROPIC_API_KEY` on Core. ElevenLabs speech requires
+`ELEVENLABS_API_KEY` and at least `ELEVENLABS_VOICE_EN`; otherwise the browser voice is used.
 
 ```bash
 npm install
