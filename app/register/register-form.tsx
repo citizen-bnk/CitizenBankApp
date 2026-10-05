@@ -37,7 +37,7 @@ export default function RegisterForm() {
       <label className="field"><span>Email</span><input type="email" autoComplete="email" value={f.email} onChange={set("email")} required /></label>
       <label className="field"><span>Mobile number (for airtime)</span><input type="tel" autoComplete="tel" placeholder="+266 5…" value={f.phone} onChange={set("phone")} /></label>
       <label className="field"><span>Password — at least 10 characters with a letter and a number</span><input type="password" autoComplete="new-password" value={f.password} onChange={set("password")} required /></label>
-      <button className="btn" disabled={busy}>{busy ? "Opening your account…" : "Open account"}</button>
+      <button className="btn" disabled={busy}>{busy ? "Creating your profile…" : "Create profile"}</button>
       <p className="alt">Already with us? <a href="/login">Sign in</a></p>
     </form>
   );

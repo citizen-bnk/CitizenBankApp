@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import AccessButtons from "@/components/AccessButtons";
+
 const DEMO_EMAIL = "palesa@demo.citizenbank.co.ls";
 
 export default function LoginForm() {
@@ -37,6 +39,8 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={submit} noValidate>
+      <AccessButtons />
+      <details><summary style={{cursor:"pointer",marginBottom:16}}>Use email and password</summary>
       {reason === "timeout" && <div className="info">You were signed out after 5 minutes of inactivity.</div>}
       {error && <div className="err" role="alert">{error}</div>}
       <label className="field">
@@ -55,6 +59,7 @@ export default function LoginForm() {
           administrator for the demo password.
         </div>
       )}
+    </details>
     </form>
   );
 }

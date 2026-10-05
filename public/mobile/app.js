@@ -29,6 +29,8 @@
           throw new Error('Please sign in again.');
         }
         if(!res.ok){
+          if(json && json.code === 'KYC_REQUIRED') window.dispatchEvent(new CustomEvent('citizen:kyc-required', {detail:json.kyc}));
+          if(json && json.code === 'REAUTH_REQUIRED') window.dispatchEvent(new CustomEvent('citizen:reauth-required'));
           var err = new Error((json && json.error) || 'Something went wrong. Please try again.');
           err.code = json && json.code; err.status = res.status;
           throw err;

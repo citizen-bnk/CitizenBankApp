@@ -17,10 +17,12 @@ export const viewport: Viewport = {
   themeColor: "#07060d",
 };
 
+import AccessPanel from "@/components/AccessPanel";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>{children}<AccessPanel /></body>
     </html>
   );
 }
