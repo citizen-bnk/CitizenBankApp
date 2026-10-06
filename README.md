@@ -13,6 +13,21 @@ and typed requests, Accounts, Payments, Cards and More. It's wired to live data 
 - Money is in **maloti (M / LSL)**. Outside Lesotho, the balance card also shows an indicative local-currency amount.
 - Session timeout after 5 minutes of inactivity. Service worker caches the app shell only, never banking data.
 
+## Where this fits in the Citizen Bank ecosystem
+
+Citizen Bank is four hosts backed by six repositories, all deployed on Vercel. A person signs in once on the website; the website hands them to banking with a one-time signed token, so the banking apps never see the website's session. The full map is in [`docs/ECOSYSTEM.md`](https://github.com/citizen-bnk/CitizenBankWebsite/blob/claude/practical-volta-tqe0qk/docs/ECOSYSTEM.md) in the website repository.
+
+| Host | Role | Repository |
+|---|---|---|
+| `citizenbank.co.ls` | Website, and for now the Citizen Hub for investors, board and back office | [CitizenBankWebsite](https://github.com/citizen-bnk/CitizenBankWebsite) |
+| `hub.citizenbank.co.ls` | Citizen Hub frontend (to be split from the website) | [citizen-hub](https://github.com/citizen-bnk/citizen-hub) |
+| `banking.citizenbank.co.ls` | Internet banking, desktop | [CitizenInternetBanking](https://github.com/citizen-bnk/CitizenInternetBanking) |
+| `app.citizenbank.co.ls` | Mobile banking app (PWA) | [CitizenBankApp](https://github.com/citizen-bnk/CitizenBankApp) **(this repository)** |
+| `(API only)` | Bank Core: the ledger and the rules | [CitizenBankCore](https://github.com/citizen-bnk/CitizenBankCore) |
+| `(shared code)` | Person model, token handling, shared types | [citizen-platform](https://github.com/citizen-bnk/citizen-platform) |
+
+_Status: the sign-in handoff between the website and banking is on the `claude/demo-sso` branches (and the website's pull request) and is not on `main` yet._
+
 ## Deploy on Vercel
 
 1. Deploy **CitizenBankCore** first and note its URL.
