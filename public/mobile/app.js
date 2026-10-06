@@ -29,6 +29,8 @@
           throw new Error('Please sign in again.');
         }
         if(!res.ok){
+          if(json && json.code === 'KYC_REQUIRED') window.dispatchEvent(new CustomEvent('citizen:kyc-required', {detail:json.kyc}));
+          if(json && json.code === 'REAUTH_REQUIRED') window.dispatchEvent(new CustomEvent('citizen:reauth-required'));
           var err = new Error((json && json.error) || 'Something went wrong. Please try again.');
           err.code = json && json.code; err.status = res.status;
           throw err;
@@ -159,8 +161,8 @@
         langHint: 'Citizen AI will speak and greet you in the language you choose here. Setting is saved to your profile.',
         aboutLabel: 'About this voice',
         aboutHint: "Native isiZulu and Sesotho voices are produced with ElevenLabs' professional voice cloning, trained on recordings of native speakers, then served through the multilingual speech model. Translations shown are drafts and should be reviewed by a native-speaking linguist before going live.",
-        voiceStatusDefault: 'Using simulated voice preview — connect a voice backend for real audio.',
-        speakingWith: 'Speaking with ElevenLabs voice ({voice}).',
+        voiceStatusDefault: 'Citizen AI uses an AI-generated voice, with browser speech as a fallback.',
+        speakingWith: 'Citizen AI is speaking ({voice}).',
         totalBalance: 'Total balance', availableBalance: 'Available Balance', currentAccount: 'Current Account', savingsAccount: 'Savings Account',
         quickActionsLabel: 'Quick actions', internalTransfer: 'Transfer between accounts',
         internalTransferSub: 'Move money between your own accounts instantly', recentActivity: 'Recent activity',
@@ -768,6 +770,28 @@
   const USE_REAL_TTS = true;
   let ttsUnavailable = false; // set after the first 501 so we stop asking
   let audioCtx = null, analyser = null, analyserData = null;
+  let activeVoice = null, voiceRequest = null, cancelVoice = null, speechVersion = 0;
+
+  function stopVoice(){
+    speechVersion++;
+    if(voiceRequest){ voiceRequest.abort(); voiceRequest = null; }
+    if(activeVoice){ activeVoice.pause(); activeVoice = null; }
+    if(cancelVoice){ cancelVoice(); cancelVoice = null; }
+    if(window.speechSynthesis) window.speechSynthesis.cancel();
+  }
+
+  function speakWithBrowser(text, lang, version){
+    return new Promise(function(resolve){
+      if(version !== speechVersion || !window.speechSynthesis){ resolve(); return; }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang === 'st' ? 'st-ZA' : lang === 'zu' ? 'zu-ZA' : 'en-ZA';
+      const finish = function(){ utterance.onend = utterance.onerror = null; cancelVoice = null; stopWordPulses(); resolve(); };
+      cancelVoice = finish;
+      utterance.onstart = function(){ speakWordPulses(text, Math.max(1500, text.length * 62)); };
+      utterance.onend = utterance.onerror = finish;
+      window.speechSynthesis.speak(utterance);
+    });
+  }
 
   function ensureAudioGraph(){
     if(audioCtx) return;
@@ -782,22 +806,40 @@
   function speakWithElevenLabs(text, lang){
     return new Promise(function(resolve){
       ensureAudioGraph();
+      const version = speechVersion;
+      voiceRequest = new AbortController();
       const cfg = LANGUAGES[lang] || LANGUAGES.en;
 
       fetch(TTS_CONFIG.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text, language_code: lang }),
-        credentials: 'same-origin'
+        credentials: 'same-origin', signal: voiceRequest.signal
       })
         .then(function(res){ if(res.status === 501 || res.status === 401) ttsUnavailable = true; if(!res.ok) throw new Error('TTS request failed: ' + res.status); return res.blob(); })
         .then(function(blob){
-          const audioEl = new Audio(URL.createObjectURL(blob));
-          const source = audioCtx.createMediaElementSource(audioEl);
-          source.connect(analyser);
-          analyser.connect(audioCtx.destination);
+          if(version !== speechVersion){ resolve('cancelled'); return; }
+          const url = URL.createObjectURL(blob);
+          const audioEl = new Audio(url);
+          activeVoice = audioEl;
+          let source = null;
+          if(audioCtx){
+            source = audioCtx.createMediaElementSource(audioEl);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            audioCtx.resume().catch(function(){});
+          }
+          const finish = function(result){
+            audioEl.pause();
+            if(source) source.disconnect();
+            URL.revokeObjectURL(url);
+            if(activeVoice === audioEl){ activeVoice = null; cancelVoice = null; }
+            resolve(result);
+          };
+          cancelVoice = function(){ finish('cancelled'); };
 
           function tick(){
+            if(!analyser) return;
             analyser.getByteFrequencyData(analyserData);
             let sum = 0;
             for(let i=0;i<analyserData.length;i++) sum += analyserData[i];
@@ -809,13 +851,13 @@
             voiceStatusText.textContent = cfg.ui.speakingWith.replace('{voice}', cfg.label);
             requestAnimationFrame(tick);
           });
-          audioEl.addEventListener('ended', function(){ resolve('played'); });
-          audioEl.addEventListener('error', function(){ resolve('fallback'); });
-          audioEl.play().catch(function(){ resolve('fallback'); });
+          audioEl.addEventListener('ended', function(){ finish('played'); });
+          audioEl.addEventListener('error', function(){ finish('fallback'); });
+          audioEl.play().catch(function(){ finish('fallback'); });
         })
         .catch(function(){
           voiceStatusText.textContent = cfg.ui.voiceStatusDefault;
-          resolve('fallback');
+          resolve(version === speechVersion ? 'fallback' : 'cancelled');
         });
     });
   }
@@ -825,8 +867,11 @@
   function speakLines(lines, onDone){
     let i = 0;
     clearTimeout(speechTimer);
+    stopVoice();
+    const version = speechVersion;
 
     function next(){
+      if(version !== speechVersion) return;
       if(i >= lines.length){ if(onDone) onDone(); return; }
       const text = lines[i];
       anime({ targets: cinematicText, opacity: [1, 0], translateY: [0, -6], duration: 180, easing: 'easeInQuad',
@@ -839,15 +884,12 @@
 
       const duration = Math.max(1500, text.length * 62);
       if(currentState === 'speaking'){
-        if(USE_REAL_TTS && !ttsUnavailable){
-          speakWithElevenLabs(text, currentLanguage).then(function(result){
-            if(result === 'fallback' && currentState === 'speaking'){
-              speakWordPulses(text, duration);
-            }
-          });
-        } else {
-          speakWordPulses(text, duration);
-        }
+        const playback = USE_REAL_TTS && !ttsUnavailable ? speakWithElevenLabs(text, currentLanguage) : Promise.resolve('fallback');
+        playback.then(function(result){
+          if(version !== speechVersion) return;
+          return result === 'fallback' ? speakWithBrowser(text, currentLanguage, version) : undefined;
+        }).then(function(){ if(version === speechVersion){ i++; next(); } });
+        return;
       }
       speechTimer = setTimeout(function(){ i++; next(); }, duration);
     }
@@ -1924,7 +1966,7 @@
     return merged.slice(0, 5);
   }
 
-  function interruptSpeech(){ clearTimeout(speechTimer); stopWordPulses(); }
+  function interruptSpeech(){ clearTimeout(speechTimer); stopVoice(); stopWordPulses(); }
 
   function startActionFromAI(action){
     const flowKey = AI_FLOW_MAP[action.flow];
