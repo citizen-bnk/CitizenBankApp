@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import AccessButtons from "@/components/AccessButtons";
+import { loginReasonMessage, websiteSignInUrl } from "@/lib/sso";
 
 const DEMO_EMAIL = "palesa@demo.citizenbank.co.ls";
 
@@ -13,7 +14,8 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const reason = params.get("reason");
+  const reasonNotice = loginReasonMessage(params.get("reason"));
+  const websiteSignIn = websiteSignInUrl(process.env.NEXT_PUBLIC_SIGN_IN_URL);
   const showDemo = process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN !== "false";
 
   async function submit(e: React.FormEvent) {
@@ -39,9 +41,14 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={submit} noValidate>
+      {reasonNotice && <div className="info" role="status">{reasonNotice}</div>}
       <AccessButtons />
+      {websiteSignIn && (
+        <p style={{ margin: "0 0 20px", fontSize: 14 }}>
+          Already an investor or shareholder with a Citizen account? <a href={websiteSignIn}>Sign in with your Citizen account</a>
+        </p>
+      )}
       <details><summary style={{cursor:"pointer",marginBottom:16}}>Use email and password</summary>
-      {reason === "timeout" && <div className="info">You were signed out after 5 minutes of inactivity.</div>}
       {error && <div className="err" role="alert">{error}</div>}
       <label className="field">
         <span>Email</span>
