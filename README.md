@@ -24,6 +24,15 @@ and typed requests, Accounts, Payments, Cards and More. It's wired to live data 
 
 On a phone, open the URL and choose **Add to Home Screen** to install it.
 
+## Sign-in through the Citizen Bank website
+
+Set `SIGN_IN_URL` to the website's sign-in page and `/login` and `/register` hand over to it. After signing in
+there, the website's "Open Citizen Bank App" button opens `/sso?code=...&next=/`: this server passes the one-time code
+to Core (`POST /api/auth/sso`), forwards Core's session cookie and continues to `next` (a path on this site only). A
+refused or expired code returns to the website's sign-in page. The code is valid once for 60 seconds. Core must have
+`PLATFORM_JWKS_URL` and `PLATFORM_ISSUER` set. The call to Core is server to server, so this host does not need to be
+in Core's `ALLOWED_ORIGINS` for it. `NEXT_PUBLIC_DEMO_BANNER` shows a small label on every page. Run `npm test` for the tests.
+
 ## Local development
 
 ```bash
