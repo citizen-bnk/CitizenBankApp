@@ -11,4 +11,4 @@ export function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/", "/statements/:path*"] };
+export const config = { matcher: ["/", "/statements/:path*", "/profile"] };
