@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import DemoAccounts from "@/components/DemoAccounts";
 import AccessButtons from "@/components/AccessButtons";
 import { loginReasonMessage, websiteSignInUrl } from "@/lib/sso";
 
-const DEMO_EMAIL = "palesa@demo.citizenbank.co.ls";
+
 
 export default function LoginForm() {
   const params = useSearchParams();
@@ -16,7 +17,7 @@ export default function LoginForm() {
   const [busy, setBusy] = useState(false);
   const reasonNotice = loginReasonMessage(params.get("reason"));
   const websiteSignIn = websiteSignInUrl(process.env.NEXT_PUBLIC_SIGN_IN_URL);
-  const showDemo = process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN !== "false";
+
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,6 +44,8 @@ export default function LoginForm() {
     <form onSubmit={submit} noValidate>
       {reasonNotice && <div className="info" role="status">{reasonNotice}</div>}
       <AccessButtons />
+      <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizen-website-demo.vercel.app/"}>Back to Citizen Bank website</a></p>
+      <DemoAccounts />
       {websiteSignIn && (
         <p style={{ margin: "0 0 20px", fontSize: 14 }}>
           Already an investor or shareholder with a Citizen account? <a href={websiteSignIn}>Sign in with your Citizen account</a>
@@ -60,12 +63,7 @@ export default function LoginForm() {
       </label>
       <button className="btn" disabled={busy || !email || !password}>{busy ? "Signing in…" : "Sign in"}</button>
       <p className="alt">New to Citizen Bank? <a href="/register">Open an account</a></p>
-      {showDemo && (
-        <div className="demo">
-          Demo profile: <button type="button" onClick={() => setEmail(DEMO_EMAIL)}>{DEMO_EMAIL}</button> — ask your
-          administrator for the demo password.
-        </div>
-      )}
+
     </details>
     </form>
   );
