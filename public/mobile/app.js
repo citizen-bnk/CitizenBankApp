@@ -297,8 +297,7 @@
 
   /* ---------------- Profile panel open/close ---------------- */
   function openProfile(){
-    profilePanel.classList.add('open');
-    profileScrim.classList.add('open');
+    window.location.assign('/profile#settings');
   }
   function closeProfile(){
     profilePanel.classList.remove('open');

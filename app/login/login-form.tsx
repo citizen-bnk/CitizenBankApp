@@ -27,7 +27,7 @@ export default function LoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }), signal: AbortSignal.timeout(15000),
+        body: JSON.stringify({ email, password }), signal: AbortSignal.timeout(45000),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || "Sign-in failed. Please try again.");
