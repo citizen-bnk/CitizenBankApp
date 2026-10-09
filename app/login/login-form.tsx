@@ -27,7 +27,7 @@ export default function LoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password }), signal: AbortSignal.timeout(45000),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || "Sign-in failed. Please try again.");
@@ -41,18 +41,16 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} noValidate>
+    <form onSubmit={submit} >
       {reasonNotice && <div className="info" role="status">{reasonNotice}</div>}
-      <AccessButtons />
-      <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizen-website-demo.vercel.app/"}>Back to Citizen Bank website</a></p>
-      <DemoAccounts />
+      <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls/"}>Back to Citizen Bank website</a></p>
       {websiteSignIn && (
         <p style={{ margin: "0 0 20px", fontSize: 14 }}>
           Already an investor or shareholder with a Citizen account? <a href={websiteSignIn}>Sign in with your Citizen account</a>
         </p>
       )}
-      <details><summary style={{cursor:"pointer",marginBottom:16}}>Use email and password</summary>
-      {error && <div className="err" role="alert">{error}</div>}
+
+      {error && <div className="err" role="alert"><p>{error}</p><button type="button" className="button" onClick={()=>setError(null)}>Edit details / retry</button><a href="/login">Start again</a><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls"}>Cancel · Website</a></div>}
       <label className="field">
         <span>Email</span>
         <input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -61,10 +59,12 @@ export default function LoginForm() {
         <span>Password</span>
         <input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       </label>
+      <AccessButtons />
       <button className="btn" disabled={busy || !email || !password}>{busy ? "Signing in…" : "Sign in"}</button>
       <p className="alt">New to Citizen Bank? <a href="/register">Open an account</a></p>
 
-    </details>
+      <p className="access-note"><a href={(process.env.NEXT_PUBLIC_HUB_URL || "https://hub.citizenbank.co.ls")+"/reset-password"}>Activate account / reset password</a></p>
+      <DemoAccounts />
     </form>
   );
 }
