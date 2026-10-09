@@ -15,7 +15,7 @@ export default function RegisterPage() {
         <h1>Start exploring</h1>
         <p className="sub">Create your Citizen profile. Complete checks when a service needs them.</p>
         <RegisterForm /><AccessButtons /><DemoAccounts />
-        <a className="access-return" href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizen-website-demo.vercel.app"}>← Back to Citizen Bank website</a>
+        <a className="access-return" href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls"}>← Back to Citizen Bank website</a>
       </div>
       <p className="legal">
         Citizen Digital Ltd (Reg. 99073) is the applicant for a Central Bank of Lesotho banking licence and does not

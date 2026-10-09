@@ -43,14 +43,14 @@ export default function LoginForm() {
   return (
     <form onSubmit={submit} >
       {reasonNotice && <div className="info" role="status">{reasonNotice}</div>}
-      <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizen-website-demo.vercel.app/"}>Back to Citizen Bank website</a></p>
+      <p><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls/"}>Back to Citizen Bank website</a></p>
       {websiteSignIn && (
         <p style={{ margin: "0 0 20px", fontSize: 14 }}>
           Already an investor or shareholder with a Citizen account? <a href={websiteSignIn}>Sign in with your Citizen account</a>
         </p>
       )}
 
-      {error && <div className="err" role="alert"><p>{error}</p><button type="button" className="button" onClick={()=>setError(null)}>Edit details / retry</button><a href="/login">Start again</a><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizen-website-demo.vercel.app"}>Cancel · Website</a></div>}
+      {error && <div className="err" role="alert"><p>{error}</p><button type="button" className="button" onClick={()=>setError(null)}>Edit details / retry</button><a href="/login">Start again</a><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls"}>Cancel · Website</a></div>}
       <label className="field">
         <span>Email</span>
         <input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -63,7 +63,7 @@ export default function LoginForm() {
       <button className="btn" disabled={busy || !email || !password}>{busy ? "Signing in…" : "Sign in"}</button>
       <p className="alt">New to Citizen Bank? <a href="/register">Open an account</a></p>
 
-      <p className="access-note"><a href={(process.env.NEXT_PUBLIC_HUB_URL || "https://citizen-hub-demo.vercel.app")+"/reset-password"}>Activate account / reset password</a></p>
+      <p className="access-note"><a href={(process.env.NEXT_PUBLIC_HUB_URL || "https://hub.citizenbank.co.ls")+"/reset-password"}>Activate account / reset password</a></p>
       <DemoAccounts />
     </form>
   );
