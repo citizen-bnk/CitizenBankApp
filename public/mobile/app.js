@@ -67,7 +67,7 @@
       })
       .catch(function(err){
         var el = document.getElementById('bootError');
-        if(el){ el.textContent = err.message + ' '; var a = document.createElement('a'); a.href = '/'; a.textContent = 'Retry'; el.appendChild(a); el.hidden = false; }
+        if(el){ el.textContent = err.message + ' '; var a = document.createElement('a'); a.href = err.status===403 ? document.getElementById('app-root').dataset.hubUrl : '/'; a.textContent = err.status===403 ? 'Open Citizen Hub' : 'Retry'; el.appendChild(a); if(err.status===403){var back=document.createElement('button');back.type='button';back.textContent='Go back';back.onclick=function(){window.history.back();};el.appendChild(back);var website=document.createElement('a');website.href=document.getElementById('app-root').dataset.websiteUrl;website.textContent='Citizen Bank website';el.appendChild(website);var shell=document.querySelector('.app-shell');if(shell)shell.hidden=true;} el.hidden = false; }
       });
   }
 
