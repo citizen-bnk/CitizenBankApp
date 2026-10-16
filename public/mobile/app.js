@@ -2655,7 +2655,7 @@
       });
     }, 260);
   });
-  document.getElementById('securityRow').addEventListener('click', openProfile);
+  document.getElementById('securityRow').addEventListener('click', function(){ window.location.assign('/profile#settings'); });
   document.getElementById('notificationsRow').addEventListener('click', function(){
     switchScreen('ai');
     setTimeout(function(){
