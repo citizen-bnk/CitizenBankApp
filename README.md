@@ -27,7 +27,7 @@ Citizen Bank is four hosts backed by six repositories, all deployed on Vercel. A
 | `(API only)` | Bank Core: the ledger and the rules | [CitizenBankCore](https://github.com/citizen-bnk/CitizenBankCore) |
 | `(shared code)` | Person model, token handling, shared types | [citizen-platform](https://github.com/citizen-bnk/citizen-platform) |
 
-_Status: the sign-in handoff between the website and banking is on the `claude/demo-sso` branches (and the website's pull request) and is not on `main` yet._
+_Status: the sign-in handoff from the website (`/sso`) is implemented in this repository; see "Sign-in through the Citizen Bank website" below. The website side must be deployed with it for the button to work._
 
 ## Deploy on Vercel
 
