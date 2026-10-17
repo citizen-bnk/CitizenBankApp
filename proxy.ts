@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Signed-out visitors go straight to /login (Core still verifies every API call). */
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   if (!req.cookies.get("cb_session")) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";

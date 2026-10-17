@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@simplewebauthn/browser": "^13.3.0",
-    "next": "^15.5.26",
+    "next": "^16.4.2",
     "react": "^19.1.9",
     "react-dom": "^19.1.9"
   },
