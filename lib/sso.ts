@@ -4,10 +4,7 @@
  * Kept free of framework imports so it runs in the middleware (edge) runtime and can be tested directly.
  */
 
-import { safeNext } from "@citizen-bnk/platform";
-
-// Shared with the website and the other banking apps so every host applies the same redirect rule.
-export { safeNext };
+export { safeNext } from "./redirect";
 
 export type Redeemed = { ok: true; setCookies: string[] } | { ok: false; reason: "sso" | "unavailable" };
 

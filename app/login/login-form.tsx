@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { safeNext } from "@/lib/redirect";
 
 import AccessButtons from "@/components/AccessButtons";
 import { loginReasonMessage, websiteSignInUrl } from "@/lib/sso";
@@ -32,7 +33,7 @@ export default function LoginForm() {
       if (!res.ok) throw new Error(json.error || "Sign-in failed. Please try again.");
       const next = params.get("next");
       // Full page load so the app shell's scripts run fresh.
-      window.location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+      window.location.href = safeNext(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
       setBusy(false);

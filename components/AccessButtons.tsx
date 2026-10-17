@@ -1,12 +1,13 @@
 "use client";
 import { useEffect,useState } from 'react';
 import { startAuthentication } from '@simplewebauthn/browser';
+import { safeNext } from '@/lib/redirect';
 export default function AccessButtons(){
  const [supported,setSupported]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{setSupported(!!window.PublicKeyCredential)},[]);
  async function post(path:string,data:unknown){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(!r.ok)throw new Error(j.error || 'Please try again.');return j;}
  async function enter(passkey:boolean){setBusy(true);setError('');try{if(passkey){const options=await post('/api/auth/passkey/options',{purpose:'login'});const response=await startAuthentication({optionsJSON:options});await post('/api/auth/passkey/verify',{purpose:'login',response});}else await post('/api/auth/explore',{});
- const next=new URLSearchParams(window.location.search).get('next');window.location.href=next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
+ const next=new URLSearchParams(window.location.search).get('next');window.location.href=safeNext(next);
  }catch(e){setError(e instanceof Error?e.message:'Secure unlock was cancelled.');setBusy(false);}}
  return <div style={{display:'grid',gap:12,marginBottom:20}}>
  {supported && <button type="button" className="btn block" disabled={busy} onClick={()=>enter(true)}>Unlock securely</button>}
