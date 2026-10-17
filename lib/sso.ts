@@ -4,12 +4,10 @@
  * Kept free of framework imports so it runs in the middleware (edge) runtime and can be tested directly.
  */
 
-/** Only a path on this site is allowed as a destination; anything else becomes "/". */
-export function safeNext(value: string | null | undefined): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/";
-  if (/[\u0000-\u001f\u007f]/.test(value)) return "/";
-  return value;
-}
+import { safeNext } from "@citizen-bnk/platform";
+
+// Shared with the website and the other banking apps so every host applies the same redirect rule.
+export { safeNext };
 
 export type Redeemed = { ok: true; setCookies: string[] } | { ok: false; reason: "sso" | "unavailable" };
 
