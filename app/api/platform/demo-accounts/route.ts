@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 export async function GET() {
   try {
-    const base = process.env.PLATFORM_WEBSITE_URL || process.env.NEXT_PUBLIC_WEBSITE_URL || process.env.NEXT_PUBLIC_SIGN_IN_URL;
+    const base = process.env.PLATFORM_HUB_URL || process.env.PLATFORM_WEBSITE_URL || process.env.NEXT_PUBLIC_WEBSITE_URL || process.env.NEXT_PUBLIC_SIGN_IN_URL;
     if (!base) return NextResponse.json({accounts:[]},{status:503});
     const url = new URL("/api/platform/demo-accounts",base);
     const response = await fetch(url,{cache:"no-store",signal:AbortSignal.timeout(8000)});

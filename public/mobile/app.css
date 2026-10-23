@@ -1077,3 +1077,7 @@
   .boot-error{ position:fixed; left:16px; right:16px; bottom:120px; z-index:50; padding:12px 14px; border-radius:12px;
     background:rgba(255,106,61,0.15); border:1px solid rgba(255,106,61,0.4); color:var(--ink-0); font-size:13px; }
   .boot-error a{ color:var(--gold); }
+
+.screen,.screen-header,.flow-confirm-row{min-width:0}.flow-text-input{max-width:100%;font-size:16px}.flow-confirm-row{flex-wrap:wrap}.flow-confirm-btn,.flow-text-submit,.navitem{min-height:44px}.boot-error{overflow-wrap:anywhere}.screen img{max-width:100%}@media(min-width:768px){.screens{width:100%;max-width:900px;margin:0 auto}.screen{width:100%}.navbar{width:100%;max-width:900px;left:50%;transform:translateX(-50%)}}@media(max-width:360px){.screen-header{padding-left:16px;padding-right:16px}.flow-confirm-btn{padding-left:12px;padding-right:12px}}
+
+#energizeAccount[hidden]{display:none!important} #energizeAccount .flow-confirm-btn{width:100%;min-height:48px}
