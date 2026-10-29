@@ -12,7 +12,7 @@ export default function MobileApp() {
     <>
       {/* eslint-disable-next-line @next/next/no-css-tags */}
       <link rel="stylesheet" href="/mobile/app.css" precedence="default" />
-      <div id="app-root" style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: SHELL_HTML }} />
+      <div id="app-root" data-website-url={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls"} style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: SHELL_HTML }} />
       <script src="/vendor/anime.min.js" defer />
       <script src="/mobile/app.js" defer />
     </>

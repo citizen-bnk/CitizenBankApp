@@ -7,6 +7,7 @@ import type { NextConfig } from "next";
 const CORE_API_URL = (process.env.CORE_API_URL || "http://localhost:4000").replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: process.cwd(),
   poweredByHeader: false,
   async rewrites() {
     return [{ source: "/api/:path*", destination: `${CORE_API_URL}/api/:path*` }];
@@ -26,7 +27,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_ECOSYSTEM_DEMO === "true" ? " 'unsafe-eval'" : ""}`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob:",

@@ -13,6 +13,7 @@ export default function RegisterPage() {
         <h1>Open your account</h1>
         <p className="sub">A current account, a savings account and a virtual card — in two minutes.</p>
         <RegisterForm />
+        <p className="alt"><a href={process.env.NEXT_PUBLIC_WEBSITE_URL || "https://citizenbank.co.ls"}>Back to Citizen Bank website</a></p>
       </div>
       <p className="legal">
         Citizen Digital Ltd (Reg. 99073) is the applicant for a Central Bank of Lesotho banking licence and does not

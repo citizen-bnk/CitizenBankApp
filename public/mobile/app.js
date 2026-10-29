@@ -2697,6 +2697,16 @@
   document.getElementById('logoutRow').addEventListener('click', function(){
     if(window.confirm('Log out of Citizen Bank?')) logout();
   });
+  var websiteUrl = document.getElementById('app-root')?.dataset.websiteUrl;
+  if(websiteUrl){
+    var websiteLink = document.createElement('a');
+    websiteLink.href = websiteUrl;
+    websiteLink.className = 'menu-row';
+    websiteLink.style.textDecoration = 'none';
+    websiteLink.style.color = 'inherit';
+    websiteLink.textContent = 'Citizen Bank website ↗';
+    document.getElementById('logoutRow').before(websiteLink);
+  }
 
   /* More screen: Settings opens the language/profile panel directly. */
   document.getElementById('settingsRow').addEventListener('click', openProfile);
