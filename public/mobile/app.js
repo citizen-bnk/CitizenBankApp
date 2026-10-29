@@ -1972,6 +1972,7 @@
       setState('speaking');
       speakLines(splitSentences(res.reply), function(){
         if(res.action) startActionFromAI(res.action);
+        else if(res.profileSuggestion) confirmProfileSuggestion(res.profileSuggestion);
         else setState('idle');
       });
     }).catch(function(err){
@@ -1980,6 +1981,28 @@
       setState('speaking');
       speakLines([err.message], function(){ setState('idle'); });
     });
+  }
+
+  function confirmProfileSuggestion(suggestion){
+    setState('idle');
+    var backdrop = document.createElement('div'); backdrop.className = 'profile-question-backdrop';
+    var card = document.createElement('section'); card.className = 'profile-question-card';
+    card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true');
+    var title = document.createElement('h2'); title.textContent = 'Save this to your profile?';
+    var value = document.createElement('p'); value.textContent = suggestion.field.replace(/([A-Z])/g, ' $1') + ': ' + suggestion.value;
+    var message = document.createElement('p'); message.setAttribute('role', 'alert');
+    var actions = document.createElement('div'); actions.className = 'profile-question-actions';
+    var save = document.createElement('button'); save.textContent = 'Save to profile';
+    var cancel = document.createElement('button'); cancel.textContent = 'No thanks';
+    save.addEventListener('click', function(){
+      save.disabled = true;
+      api('/api/profile/prompt', { body: { action: 'confirm_suggestion', field: suggestion.field, value: suggestion.value } }).then(function(){
+        backdrop.remove(); refreshData().catch(function(){});
+      }).catch(function(e){ message.textContent = e.message; save.disabled = false; });
+    });
+    cancel.addEventListener('click', function(){ backdrop.remove(); });
+    actions.append(save, cancel); card.append(title, value, message, actions); backdrop.append(card); document.body.append(backdrop);
+    save.focus();
   }
 
   function submitUtterance(text){
@@ -2690,19 +2713,66 @@
   /* ---------------- Idle timeout: sign out after 5 minutes without interaction ---------------- */
   const IDLE_LIMIT_MS = 5 * 60 * 1000;
   let lastActivity = Date.now();
-  ['pointerdown', 'keydown', 'touchstart'].forEach(function(ev){ document.addEventListener(ev, function(){ lastActivity = Date.now(); }, { passive: true }); });
+  let lastSessionRenewal = Date.now();
+  let endingSession = false;
+  function timeOutSession(){ if(endingSession) return; endingSession = true; logout('timeout'); }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function(ev){ document.addEventListener(ev, function(){
+    if(Date.now() - lastActivity > IDLE_LIMIT_MS) return timeOutSession();
+    lastActivity = Date.now();
+    if(lastActivity - lastSessionRenewal > 60000){
+      lastSessionRenewal = lastActivity;
+      api('/api/auth/activity', { body: {} }).catch(timeOutSession);
+    }
+  }, { passive: true }); });
   setInterval(function(){
-    if(Date.now() - lastActivity > IDLE_LIMIT_MS && currentState !== 'speaking' && currentState !== 'thinking') logout('timeout');
+    if(Date.now() - lastActivity > IDLE_LIMIT_MS) timeOutSession();
   }, 15000);
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState === 'visible'){
-      if(Date.now() - lastActivity > IDLE_LIMIT_MS) logout('timeout');
+      if(Date.now() - lastActivity > IDLE_LIMIT_MS) timeOutSession();
       else refreshData().catch(function(){});
     }
   });
 
+  /* At most two optional profile questions each day, shared with Internet Banking. */
+  function offerProfileQuestion(){
+    api('/api/profile/prompt').then(function(result){
+      if(!result.question) return;
+      var q = result.question;
+      var backdrop = document.createElement('div'); backdrop.className = 'profile-question-backdrop';
+      var card = document.createElement('section'); card.className = 'profile-question-card';
+      card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-label', 'One profile question');
+      var eyebrow = document.createElement('p'); eyebrow.textContent = 'One quick profile question';
+      var title = document.createElement('h2'); title.textContent = q.question;
+      var input = document.createElement('input'); input.type = q.field === 'phone' ? 'tel' : 'text'; input.placeholder = q.hint; input.setAttribute('aria-label', q.question);
+      var help = document.createElement('p'); help.textContent = q.purpose;
+      var message = document.createElement('p'); message.setAttribute('role', 'alert');
+      var actions = document.createElement('div'); actions.className = 'profile-question-actions';
+      var save = document.createElement('button'); save.type = 'button'; save.textContent = 'Save answer';
+      var skip = document.createElement('button'); skip.type = 'button'; skip.textContent = 'Skip for now';
+      var neverLabel = document.createElement('label');
+      var never = document.createElement('input'); never.type = 'checkbox';
+      neverLabel.append(never, document.createTextNode(' Don’t ask me this question again'));
+      never.addEventListener('change', function(){ skip.textContent = never.checked ? 'Don’t ask again' : 'Skip for now'; });
+      save.addEventListener('click', function(){
+        if(!input.value.trim()) { message.textContent = 'Please enter an answer or skip for now.'; return; }
+        save.disabled = true;
+        api('/api/profile/prompt', { body: { action: 'answer', field: q.field, value: input.value } }).then(function(){
+          backdrop.remove(); refreshData().catch(function(){}); offerProfileQuestion();
+        }).catch(function(e){ message.textContent = e.message; save.disabled = false; });
+      });
+      skip.addEventListener('click', function(){
+        api('/api/profile/prompt', { body: never.checked ? { action: 'suppress', field: q.field } : { action: 'defer' } }).then(function(){ backdrop.remove(); })
+          .catch(function(e){ message.textContent = e.message; });
+      });
+      actions.append(save, skip); card.append(eyebrow, title, help, input, message, actions, neverLabel); backdrop.append(card); document.body.append(backdrop);
+      input.focus();
+    }).catch(function(){});
+  }
+
   /* ---------------- Initial paint ---------------- */
   hydrate(BOOT);
+  offerProfileQuestion();
   currentLanguage = LANGUAGES[BOOT.user.preferredLanguage] ? BOOT.user.preferredLanguage : 'en';
   document.querySelectorAll('.lang-option').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-lang') === currentLanguage); });
   applyTheme(BOOT.user.preferredTheme === 'light' ? 'light' : 'dark', true);
