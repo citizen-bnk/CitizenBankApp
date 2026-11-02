@@ -63,8 +63,8 @@ export default function LoginForm() {
         open={legacyOpen || Boolean(error)}
         onToggle={(event) => setLegacyOpen(event.currentTarget.open)}
       >
-        <summary>Existing banking credentials or demo access</summary>
-        <p className="alt">Use this option for an existing Core banking login, an enrolled passkey or a demonstration profile. New sign-ups should start with your Citizen account above.</p>
+        <summary>Existing banking credentials</summary>
+        <p className="alt">Use this option for an existing Core banking login, an enrolled passkey. New sign-ups should start with your Citizen account above.</p>
         <label className="field">
           <span>Email</span>
           <input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
