@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 export async function GET(req:Request) {
+ if(process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN!=="true")return NextResponse.json({error:"Demonstration access is disabled"},{status:403});
  const base=process.env.PLATFORM_HUB_URL || process.env.PLATFORM_WEBSITE_URL || process.env.NEXT_PUBLIC_WEBSITE_URL || process.env.NEXT_PUBLIC_SIGN_IN_URL;
  if(!base)return NextResponse.json({error:"Website sign-in is unavailable"},{status:503});
  const account=new URL(req.url).searchParams.get("account");

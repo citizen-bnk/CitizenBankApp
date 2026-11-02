@@ -19,7 +19,7 @@ export default function LoginPage() {
       </div>
       <p className="legal">
         Citizen Digital Ltd (Reg. 99073) is the applicant for a Central Bank of Lesotho banking licence and does not
-        currently carry on banking business. This is a pre-licensing demonstration of the proposed Citizen Bank.
+        currently carry on banking business. Banking accounts remain dormant until the required approvals.
       </p>
     </main>
   );

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 export async function GET() {
+  if (process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN !== "true") return NextResponse.json({accounts:[]},{headers:{"Cache-Control":"no-store"}});
   try {
     const base = process.env.PLATFORM_HUB_URL || process.env.PLATFORM_WEBSITE_URL || process.env.NEXT_PUBLIC_WEBSITE_URL || process.env.NEXT_PUBLIC_SIGN_IN_URL;
     if (!base) return NextResponse.json({accounts:[]},{status:503});
