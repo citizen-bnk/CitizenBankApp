@@ -1,9 +1,6 @@
-import {redirect} from "next/navigation";
-import type {Metadata} from "next";
+import { redirect } from "next/navigation";
 
-export const metadata:Metadata={title:"Open an account · Citizen Bank"};
-
-/** New identities are registered in Citizen Hub before the app is provisioned in Bank Core. */
-export default function RegisterPage(){
- redirect("https://hub.citizenbank.co.ls/register?next=%2Fmobile-onboarding");
+export default function RegisterPage() {
+  const website = process.env.NEXT_PUBLIC_WEBSITE_URL ?? "https://citizenbank.co.ls";
+  redirect(new URL("/auth/sign-up?next=/enter-app", website).toString());
 }
