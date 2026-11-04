@@ -295,6 +295,42 @@
     if(typeof updateTopbarAccent === 'function') updateTopbarAccent();
   }
 
+  // Navigation uses the same authoritative profile as the website and Hub.
+  const ecosystemRoot = document.getElementById('app-root');
+  const websiteBase = ecosystemRoot.dataset.websiteUrl.replace(/\/$/, '');
+  const hubBase = ecosystemRoot.dataset.hubUrl;
+  const moreMenu = document.querySelector('#screen-more .menu-list');
+  function ecosystemLink(label, href){
+    var link = document.createElement('a');
+    link.className = 'menu-row';
+    link.href = href;
+    var icon = document.createElement('span'); icon.className = 'feature-icon'; icon.textContent = '↗';
+    var text = document.createElement('span'); text.className = 'menu-text'; text.textContent = label;
+    link.append(icon, text); moreMenu.insertBefore(link, document.getElementById('logoutRow'));
+    return link;
+  }
+  ecosystemLink('Internet Banking', websiteBase + '/enter-banking');
+  ecosystemLink('Citizen Bank website', websiteBase);
+  const hubLink = ecosystemLink('Hub / Back Office', hubBase);
+  hubLink.hidden = true;
+  const accessRetry = document.createElement('button');
+  accessRetry.type = 'button'; accessRetry.className = 'menu-row'; accessRetry.textContent = 'Retry menu access'; accessRetry.hidden = true;
+  accessRetry.title = 'Staff access could not be checked. Retry.';
+  accessRetry.addEventListener('click', refreshEcosystemAccess);
+  moreMenu.insertBefore(accessRetry, document.getElementById('logoutRow'));
+  async function refreshEcosystemAccess(){
+    hubLink.hidden = true;
+    try {
+      var response = await fetch('/api/profile', {cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(10000)});
+      if(!response.ok) throw new Error('Access check unavailable');
+      var profile = await response.json();
+      accessRetry.hidden = true;
+      hubLink.hidden = !(profile && profile.linked === true && Array.isArray(profile.roles) && profile.roles.some(function(role){return ['super_admin','admin','staff','back_office'].includes(role);}));
+    } catch(e) { accessRetry.hidden = false; /* The Hub also checks permissions on its server. */ }
+  }
+  void refreshEcosystemAccess();
+  window.addEventListener('focus', refreshEcosystemAccess);
+
   /* ---------------- Profile panel open/close ---------------- */
   function openProfile(){
     window.location.assign('/profile#settings');
@@ -304,7 +340,7 @@
     profileScrim.classList.remove('open');
   }
   avatarBtn.addEventListener('click', openProfile);
-  menuBtn.addEventListener('click', openProfile);
+  menuBtn.addEventListener('click', function(){ document.querySelector('.navitem[data-screen="more"]').click(); });
   profileClose.addEventListener('click', closeProfile);
   profileScrim.addEventListener('click', closeProfile);
 
