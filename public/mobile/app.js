@@ -67,7 +67,7 @@
       })
       .catch(function(err){
         var el = document.getElementById('bootError');
-        if(el){ el.textContent = err.message + ' '; var a = document.createElement('a'); a.href = '/'; a.textContent = 'Retry'; el.appendChild(a); el.hidden = false; }
+        if(el){ el.textContent = err.message + ' '; var a = document.createElement('a'); a.href = err.status===403 ? document.getElementById('app-root').dataset.websiteUrl : '/'; a.textContent = err.status===403 ? 'Open Citizen Bank website' : 'Retry'; el.appendChild(a); if(err.status===403){var back=document.createElement('button');back.type='button';back.textContent='Go back';back.onclick=function(){window.history.back();};el.appendChild(back);var website=document.createElement('a');website.href=document.getElementById('app-root').dataset.websiteUrl;website.textContent='Citizen Bank website';el.appendChild(website);var shell=document.querySelector('.app-shell');if(shell)shell.hidden=true;} el.hidden = false; }
       });
   }
 
@@ -295,17 +295,52 @@
     if(typeof updateTopbarAccent === 'function') updateTopbarAccent();
   }
 
+  // Navigation uses the same authoritative profile as the website and Hub.
+  const ecosystemRoot = document.getElementById('app-root');
+  const websiteBase = ecosystemRoot.dataset.websiteUrl.replace(/\/$/, '');
+  const hubBase = ecosystemRoot.dataset.hubUrl;
+  const moreMenu = document.querySelector('#screen-more .menu-list');
+  function ecosystemLink(label, href){
+    var link = document.createElement('a');
+    link.className = 'menu-row';
+    link.href = href;
+    var icon = document.createElement('span'); icon.className = 'feature-icon'; icon.textContent = '↗';
+    var text = document.createElement('span'); text.className = 'menu-text'; text.textContent = label;
+    link.append(icon, text); moreMenu.insertBefore(link, document.getElementById('logoutRow'));
+    return link;
+  }
+  ecosystemLink('Internet Banking', websiteBase + '/enter-banking');
+  ecosystemLink('Citizen Bank website', websiteBase);
+  const hubLink = ecosystemLink('Hub / Back Office', hubBase);
+  hubLink.hidden = true;
+  const accessRetry = document.createElement('button');
+  accessRetry.type = 'button'; accessRetry.className = 'menu-row'; accessRetry.textContent = 'Retry menu access'; accessRetry.hidden = true;
+  accessRetry.title = 'Staff access could not be checked. Retry.';
+  accessRetry.addEventListener('click', refreshEcosystemAccess);
+  moreMenu.insertBefore(accessRetry, document.getElementById('logoutRow'));
+  async function refreshEcosystemAccess(){
+    hubLink.hidden = true;
+    try {
+      var response = await fetch('/api/profile', {cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(10000)});
+      if(!response.ok) throw new Error('Access check unavailable');
+      var profile = await response.json();
+      accessRetry.hidden = true;
+      hubLink.hidden = !(profile && profile.linked === true && Array.isArray(profile.roles) && profile.roles.some(function(role){return ['super_admin','admin','staff','back_office'].includes(role);}));
+    } catch(e) { accessRetry.hidden = false; /* The Hub also checks permissions on its server. */ }
+  }
+  void refreshEcosystemAccess();
+  window.addEventListener('focus', refreshEcosystemAccess);
+
   /* ---------------- Profile panel open/close ---------------- */
   function openProfile(){
-    profilePanel.classList.add('open');
-    profileScrim.classList.add('open');
+    window.location.assign('/profile#settings');
   }
   function closeProfile(){
     profilePanel.classList.remove('open');
     profileScrim.classList.remove('open');
   }
   avatarBtn.addEventListener('click', openProfile);
-  menuBtn.addEventListener('click', openProfile);
+  menuBtn.addEventListener('click', function(){ document.querySelector('.navitem[data-screen="more"]').click(); });
   profileClose.addEventListener('click', closeProfile);
   profileScrim.addEventListener('click', closeProfile);
 
@@ -931,6 +966,7 @@
   const USER_PHONE = BOOT.user.phone || null;
   let activeCardIndex = 0;
   let LAST_LOCATION = null;
+  let ENERGIZE=BOOT.energize||null;
 
   function shortName(n){ return String(n).replace(/ Account$/i, ''); }
 
@@ -949,9 +985,10 @@
   }
 
   function hydrate(d){
+    ENERGIZE=d.energize||null;
     ACCOUNTS = d.accounts.map(function(a){
       return { id: a.id, name: shortName(a.name), fullName: a.name, type: a.type, balance: Number(a.balance),
-               last4: a.last4, spendable: a.type !== 'FIXED_DEPOSIT', maturesAt: a.maturesAt, interestRate: a.interestRate };
+               allowedCardForms:a.allowedCardForms||["VIRTUAL","PHYSICAL"],last4: a.last4, spendable: a.type !== 'FIXED_DEPOSIT', maturesAt: a.maturesAt, interestRate: a.interestRate };
     });
     BENEFICIARIES = d.beneficiaries.slice();
     BILLERS = d.billers.slice();
@@ -1361,8 +1398,8 @@
         },
         {
           key: 'form', type: 'choice',
-          prompt: function(ctx){ return 'Would you like the ' + ctx.cardChoice.replace(/^New /, '') + ' as virtual or physical?'; },
-          options: function(){ return ['Virtual', 'Physical']; },
+          prompt: function(ctx){return (ctx.cardChoice==='Create crypto account + card'?'Create a zero-balance crypto sandbox account first. ':'')+'Choose virtual or physical. One form per account unless an administrator approves both.';},
+          options: function(ctx){const c=fuzzyFind(cardChoices(),ctx.cardChoice,'label'),a=c&&ACCOUNTS.find(function(a){return a.id===c.accountId;});return (a?a.allowedCardForms:['VIRTUAL','PHYSICAL']).map(function(f){return f==='VIRTUAL'?'Virtual':'Physical';});},
           normalize: function(v){ return /virt/i.test(v) ? 'Virtual' : /phys/i.test(v) ? 'Physical' : null; }
         },
         {
@@ -1377,14 +1414,14 @@
           prompt: function(ctx){
             return ctx.form === 'Virtual'
               ? 'Issue a virtual ' + ctx.cardChoice.replace(/^New /, '') + ' right away?'
-              : 'Order a physical ' + ctx.cardChoice.replace(/^New /, '') + ', delivered to "' + ctx.address + '"? Delivery takes 3–5 business days.';
+              : 'Order a physical ' + ctx.cardChoice.replace(/^New /, '') + ', delivered to "' + ctx.address + '"? This is a simulated order; no physical card is shipped.';
           }
         }
       ],
       execute: function(ctx){
         const c = fuzzyFind(cardChoices(), ctx.cardChoice, 'label');
         return api('/api/cards', { body: {
-          kind: c.kind, accountId: c.accountId || undefined, replacesCardId: c.replacesCardId || undefined,
+          kind: c.kind, accountId: c.accountId || undefined, replacesCardId: c.replacesCardId || undefined,createCryptoAccount:c.createCryptoAccount||undefined,
           form: ctx.form === 'Physical' ? 'PHYSICAL' : 'VIRTUAL', deliveryAddress: ctx.address || undefined
         }});
       },
@@ -1482,17 +1519,7 @@
     return BENEFICIARIES.map(function(b){ return { label: b.name, beneficiaryId: b.id, refLabel: 'Reference' }; })
       .concat(payBillers().map(function(b){ return { label: b.name, billerId: b.id, refLabel: b.refLabel }; }));
   }
-  function cardChoices(){
-    const out = [];
-    if(!CARDS.some(function(c){ return c.kind === 'CRYPTO'; })) out.push({ label: 'Crypto card', kind: 'CRYPTO' });
-    CARDS.filter(function(c){ return c.kind === 'DEBIT'; }).forEach(function(c){
-      out.push({ label: 'Replacement ' + c.label + ' card', kind: 'DEBIT', accountId: c.accountId, replacesCardId: c.id });
-    });
-    ACCOUNTS.filter(function(a){ return a.spendable && !CARDS.some(function(c){ return c.accountId === a.id; }); }).forEach(function(a){
-      out.push({ label: 'New ' + a.name + ' debit card', kind: 'DEBIT', accountId: a.id });
-    });
-    return out;
-  }
+  function cardChoices(){const crypto=ACCOUNTS.filter(function(a){return a.type==='CRYPTO';});const out=crypto.length?crypto.map(function(a){return {label:'Additional '+a.name+' crypto card',kind:'CRYPTO',accountId:a.id};}):[{label:'Create crypto account + card',kind:'CRYPTO',createCryptoAccount:true}];CARDS.filter(function(c){return c.kind==='DEBIT'&&c.accountId;}).forEach(function(c){out.push({label:'Replacement '+c.label+' card',kind:'DEBIT',accountId:c.accountId,replacesCardId:c.id});});ACCOUNTS.filter(function(a){return ['CURRENT','SAVINGS'].indexOf(a.type)>=0;}).forEach(function(a){out.push({label:'Additional '+a.name+' debit card',kind:'DEBIT',accountId:a.id});});return out;}
   function resolveDate(v){
     const s = String(v || '').trim().toLowerCase();
     const d = new Date(); d.setHours(8, 0, 0, 0);
@@ -1519,7 +1546,7 @@
     document.getElementById('totalBalanceAmount').textContent = formatRand(total);
     const localEl = document.getElementById('totalBalanceLocal');
     if(localEl){ const eq = localEquiv(total); localEl.textContent = eq ? eq + ' (indicative)' : ''; localEl.hidden = !eq; }
-    const list = document.getElementById('accountList');
+    const list = document.getElementById('accountList');let energize=document.getElementById('energizeAccount');if(!energize){energize=document.createElement('section');energize.id='energizeAccount';energize.style.cssText='padding:18px;margin:18px 0;border:1px solid #7954a8;border-radius:16px;display:grid;gap:14px';list.parentNode.insertBefore(energize,list);}energize.hidden=!ENERGIZE||!ENERGIZE.available;if(!energize.hidden){energize.innerHTML='<strong>One-time pre-licensing credit</strong><p>'+escapeHtml(ENERGIZE.amount?formatRand(ENERGIZE.amount)+' fictional money':ENERGIZE.message||'Retry your account check')+'</p><button type="button" class="flow-confirm-btn primary" id="energizeAccountButton">Energize account</button><small>No real deposit or investment refund.</small><p role="alert" id="energizeIssue"></p>';const button=document.getElementById('energizeAccountButton');button.disabled=!ENERGIZE.amount;button.onclick=function(){button.disabled=true;button.textContent='Adding fictional credit…';api('/api/accounts/energize',{body:{confirmed:true}}).then(function(){ENERGIZE={available:false};energize.hidden=true;return refreshData();}).catch(function(error){document.getElementById('energizeIssue').textContent=error.message||'Credit failed. Retry.';button.disabled=false;button.textContent='Energize account';});};}
     list.innerHTML = '';
     ACCOUNTS.forEach(function(a){
       const row = document.createElement('button');
@@ -2472,7 +2499,7 @@
 
   function cardSubtitle(card){
     if(card.status === 'ORDERED') return 'Physical card on its way';
-    if(card.kind === 'CRYPTO') return card.form === 'physical' ? 'Physical card issued' : 'Virtual only · wallet coming soon';
+    if(card.kind === 'CRYPTO') return card.form === 'physical' ? 'Simulated physical card' : 'Virtual · simulated crypto account';
     return card.form === 'physical' ? 'Virtual + Physical' : 'Virtual only';
   }
 
@@ -2664,7 +2691,7 @@
       });
     }, 260);
   });
-  document.getElementById('securityRow').addEventListener('click', openProfile);
+  document.getElementById('securityRow').addEventListener('click', function(){ window.location.assign('/profile#settings'); });
   document.getElementById('notificationsRow').addEventListener('click', function(){
     switchScreen('ai');
     setTimeout(function(){
