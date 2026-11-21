@@ -1088,3 +1088,5 @@
 
 /* Keep the availability notice in view without covering banking controls. */
 .stage{height:calc(100dvh - var(--citizen-notice-height,0px));}
+.boot-error.service-pause{background:#f4effb;border-color:#d8cee7;color:#302044;line-height:1.6}
+.boot-error.service-pause button,.boot-error.service-pause a{display:inline-flex;align-items:center;min-height:44px;margin:12px 12px 0 0;padding:10px 16px;border:1px solid #82709e;border-radius:10px;background:white;color:#382357;text-decoration:none;font:inherit;font-weight:600}

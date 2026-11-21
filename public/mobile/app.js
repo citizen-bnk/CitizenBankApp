@@ -70,6 +70,7 @@
         if(['DATA_QUOTA_EXHAUSTED','DATA_CAPACITY_UNAVAILABLE','DATABASE_UNAVAILABLE','DATA_CONNECTION_UNAVAILABLE','IDENTITY_AUTHORITY_UNAVAILABLE','SHARED_PROFILE_UNAVAILABLE'].indexOf(err.code)>=0){
           document.documentElement.classList.remove('booting');
           if(el){
+            el.classList.add('service-pause');
             el.textContent='Some services are temporarily unavailable. Please return later. ';
             var check=document.createElement('button');check.type='button';check.textContent='Check availability';
             check.onclick=function(){window.dispatchEvent(new Event('citizen:service-status'));};el.appendChild(check);
