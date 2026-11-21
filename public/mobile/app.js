@@ -67,6 +67,16 @@
       })
       .catch(function(err){
         var el = document.getElementById('bootError');
+        if(['DATA_QUOTA_EXHAUSTED','DATA_CAPACITY_UNAVAILABLE','DATABASE_UNAVAILABLE','DATA_CONNECTION_UNAVAILABLE','IDENTITY_AUTHORITY_UNAVAILABLE','SHARED_PROFILE_UNAVAILABLE'].indexOf(err.code)>=0){
+          document.documentElement.classList.remove('booting');
+          if(el){
+            el.textContent='Some services are temporarily unavailable. Please return later. ';
+            var check=document.createElement('button');check.type='button';check.textContent='Check availability';
+            check.onclick=function(){window.dispatchEvent(new Event('citizen:service-status'));};el.appendChild(check);
+            var home=document.createElement('a');home.href=document.getElementById('app-root').dataset.websiteUrl;home.textContent='Citizen Bank website';el.appendChild(home);el.hidden=false;
+          }
+          window.dispatchEvent(new Event('citizen:service-status'));return;
+        }
         if(el){ el.textContent = err.message + ' '; var a = document.createElement('a'); a.href = err.status===403 ? document.getElementById('app-root').dataset.websiteUrl : '/'; a.textContent = err.status===403 ? 'Open Citizen Bank website' : 'Retry'; el.appendChild(a); if(err.status===403){var back=document.createElement('button');back.type='button';back.textContent='Go back';back.onclick=function(){window.history.back();};el.appendChild(back);var website=document.createElement('a');website.href=document.getElementById('app-root').dataset.websiteUrl;website.textContent='Citizen Bank website';el.appendChild(website);var shell=document.querySelector('.app-shell');if(shell)shell.hidden=true;} el.hidden = false; }
       });
   }

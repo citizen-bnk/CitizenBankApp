@@ -1085,3 +1085,6 @@
 /* Cross-platform menu links follow the same touch target as menu buttons. */
 .menu-list a.menu-row { text-decoration: none; color: inherit; }
 .menu-list .menu-row[hidden] { display: none !important; }
+
+/* Keep the availability notice in view without covering banking controls. */
+.stage{height:calc(100dvh - var(--citizen-notice-height,0px));}

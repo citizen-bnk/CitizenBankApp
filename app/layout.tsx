@@ -1,3 +1,4 @@
+import ServiceNotice from "@/components/ServiceNotice";
 import type { Metadata, Viewport } from "next";
 import DemoBanner from "@/components/DemoBanner";
 
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body>
+        <ServiceNotice/>
         {children}
         <DemoBanner />
         <AccessPanel />
