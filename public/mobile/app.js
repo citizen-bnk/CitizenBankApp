@@ -999,7 +999,7 @@
     ENERGIZE=d.energize||null;
     ACCOUNTS = d.accounts.map(function(a){
       return { id: a.id, name: shortName(a.name), fullName: a.name, type: a.type, balance: Number(a.balance),
-               allowedCardForms:a.allowedCardForms||["VIRTUAL","PHYSICAL"],last4: a.last4, spendable: a.type !== 'FIXED_DEPOSIT', maturesAt: a.maturesAt, interestRate: a.interestRate };
+               number:a.number,currency:a.currency,allowedCardForms:a.allowedCardForms||["VIRTUAL","PHYSICAL"],last4: a.last4, spendable: a.type !== 'FIXED_DEPOSIT', maturesAt: a.maturesAt, interestRate: a.interestRate };
     });
     BENEFICIARIES = d.beneficiaries.slice();
     BILLERS = d.billers.slice();
@@ -1560,16 +1560,18 @@
     const list = document.getElementById('accountList');let energize=document.getElementById('energizeAccount');if(!energize){energize=document.createElement('section');energize.id='energizeAccount';energize.style.cssText='padding:18px;margin:18px 0;border:1px solid #7954a8;border-radius:16px;display:grid;gap:14px';list.parentNode.insertBefore(energize,list);}energize.hidden=!ENERGIZE||!ENERGIZE.available;if(!energize.hidden){energize.innerHTML='<strong>Energize your cheque account</strong><p>'+escapeHtml(ENERGIZE.amount?'M'+Number(ENERGIZE.amount).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2})+' fictional money':ENERGIZE.message||'Retry your account check')+'</p><button type="button" class="flow-confirm-btn primary" id="energizeAccountButton">Energize account</button><small>No real deposit or investment refund.</small><p role="alert" id="energizeIssue"></p>';const button=document.getElementById('energizeAccountButton');button.disabled=!ENERGIZE.amount;button.onclick=function(){button.disabled=true;button.textContent='Adding fictional credit…';api('/api/accounts/energize',{body:{confirmed:true}}).then(function(){ENERGIZE={available:false};energize.hidden=true;return refreshData();}).catch(function(error){document.getElementById('energizeIssue').textContent=error.message||'Credit failed. Retry.';button.disabled=false;button.textContent='Energize account';});};}
     list.innerHTML = '';
     ACCOUNTS.forEach(function(a){
-      const row = document.createElement('button');
-      row.className = 'account-row';
-      row.innerHTML = '<span class="account-icon">' + (ACCOUNT_ICONS[a.type] || ACCOUNT_ICONS.CURRENT) + '</span>' +
+      const row = document.createElement('div');row.className = 'account-row';
+      const select=document.createElement('button');select.type='button';select.className='account-select';
+      select.innerHTML = '<span class="account-icon">' + (ACCOUNT_ICONS[a.type] || ACCOUNT_ICONS.CURRENT) + '</span>' +
         '<span class="account-info"><span class="account-name">' + escapeHtml(a.fullName) + '</span><span class="account-number">•••• ' + escapeHtml(a.last4) + '</span></span>' +
         '<span class="account-amount">' + formatRand(a.balance) + '</span><span class="account-chevron">›</span>';
-      row.addEventListener('click', function(){
+      select.addEventListener('click', function(){
         const extra = a.type === 'FIXED_DEPOSIT' && a.maturesAt ? ' It earns ' + a.interestRate + '% and matures on ' + fmtDay(a.maturesAt) + '.' : '';
         goSpeak(['Your ' + a.fullName + ' has ' + money(a.balance) + ' available.' + extra]);
       });
-      list.appendChild(row);
+      const more=document.createElement('button');more.type='button';more.className='account-more';more.setAttribute('aria-label','Account options for '+a.fullName+' ending '+a.last4);more.setAttribute('aria-haspopup','dialog');more.innerHTML=window.CitizenAccountSharing.icon('more');
+      more.onclick=function(){window.CitizenAccountSharing.open({name:a.fullName,type:a.type,number:a.number,currency:a.currency},[BOOT.user.firstName,BOOT.user.lastName].filter(Boolean).join(' '),more);};
+      row.appendChild(select);row.appendChild(more);list.appendChild(row);
     });
   }
 

@@ -1,8 +1,8 @@
 /* Citizen Bank service worker — caches the app shell only. Banking data
    (/api/*) is never cached, so balances are always fresh and nothing sensitive
    is stored on the device. */
-const CACHE = "cb-shell-v5-service-recovery";
-const SHELL = ["/mobile/app.css", "/mobile/app.js", "/vendor/anime.min.js", "/brand/logo.png", "/brand/coin.png", "/icons/icon-192.png"];
+const CACHE = "cb-shell-v6-account-sharing";
+const SHELL = ["/mobile/app.css", "/mobile/app.js", "/mobile/account-sharing.js", "/vendor/anime.min.js", "/brand/logo.png", "/brand/coin.png", "/icons/icon-192.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
