@@ -1077,3 +1077,26 @@
   .boot-error{ position:fixed; left:16px; right:16px; bottom:120px; z-index:50; padding:12px 14px; border-radius:12px;
     background:rgba(255,106,61,0.15); border:1px solid rgba(255,106,61,0.4); color:var(--ink-0); font-size:13px; }
   .boot-error a{ color:var(--gold); }
+
+.screen,.screen-header,.flow-confirm-row{min-width:0}.flow-text-input{max-width:100%;font-size:16px}.flow-confirm-row{flex-wrap:wrap}.flow-confirm-btn,.flow-text-submit,.navitem{min-height:44px}.boot-error{overflow-wrap:anywhere}.screen img{max-width:100%}@media(min-width:768px){.screens{width:100%;max-width:900px;margin:0 auto}.screen{width:100%}.navbar{width:100%;max-width:900px;left:50%;transform:translateX(-50%)}}@media(max-width:360px){.screen-header{padding-left:16px;padding-right:16px}.flow-confirm-btn{padding-left:12px;padding-right:12px}}
+
+#energizeAccount[hidden]{display:none!important} #energizeAccount .flow-confirm-btn{width:100%;min-height:48px}
+
+/* Cross-platform menu links follow the same touch target as menu buttons. */
+.menu-list a.menu-row { text-decoration: none; color: inherit; }
+.menu-list .menu-row[hidden] { display: none !important; }
+
+/* Keep the availability notice in view without covering banking controls. */
+.stage{height:calc(100dvh - var(--citizen-notice-height,0px));}
+.boot-error.service-pause{background:#f4effb;border-color:#d8cee7;color:#302044;line-height:1.6}
+.boot-error.service-pause button,.boot-error.service-pause a{display:inline-flex;align-items:center;min-height:44px;margin:12px 12px 0 0;padding:10px 16px;border:1px solid #82709e;border-radius:10px;background:white;color:#382357;text-decoration:none;font:inherit;font-weight:600}
+
+/* Account actions and the native, focus-trapped sharing popup. */
+.account-row{padding:10px 8px 10px 12px;gap:6px;min-width:0}
+.account-select{display:flex;align-items:center;gap:10px;flex:1;min-width:0;border:0;background:transparent;color:inherit;padding:4px;text-align:left;font:inherit;cursor:pointer}.account-name{overflow-wrap:anywhere}
+.account-more,.account-sharing-close{display:grid;place-items:center;flex:0 0 44px;width:44px;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--surface-weak);color:var(--ink-0);cursor:pointer}
+.account-sharing-dialog{position:fixed;inset:0;margin:auto;width:min(460px,calc(100vw - 28px));max-height:90dvh;overflow:auto;padding:24px 20px;border:1px solid var(--line);border-radius:22px;background:var(--panel-bg);color:var(--ink-0);box-shadow:0 24px 80px #0008;font-family:Inter,sans-serif}
+.account-sharing-dialog::backdrop{background:#080412bb;backdrop-filter:blur(5px)}.account-sharing-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px}.account-sharing-dialog h2{font-size:20px;line-height:1.3;margin:0}.account-sharing-close{font-size:28px}.account-sharing-name{color:var(--ink-1);font-size:14px;margin:12px 0}
+.account-sharing-text{box-sizing:border-box;width:100%;min-height:260px;resize:vertical;border:1px solid var(--line);border-radius:14px;background:var(--surface-weak);color:var(--ink-0);padding:14px;font:14px/1.6 Inter,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere}
+.account-sharing-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}.account-sharing-actions button,.account-sharing-actions a{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 6px;border:1px solid var(--line);border-radius:12px;background:var(--surface-weak);color:var(--ink-0);font:14px Inter,sans-serif;cursor:pointer;text-decoration:none;min-height:50px}.account-sharing-actions [data-action=share]{background:var(--coral);color:#fff}.account-sharing-status{min-height:24px;color:var(--ink-1);font-size:13px;line-height:1.5;margin:16px 0 0}.account-more:focus-visible,.account-sharing-dialog :focus-visible{outline:2px solid var(--coral);outline-offset:3px}
+@media(max-width:380px){.account-select{flex-wrap:wrap}.account-amount{font-size:13px}.account-sharing-dialog{padding:20px 16px}.account-sharing-actions button,.account-sharing-actions a{flex-direction:column;font-size:12px}}

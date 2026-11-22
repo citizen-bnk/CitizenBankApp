@@ -1,17 +1,11 @@
 "use client";
 import { useEffect,useState } from 'react';
 import { startAuthentication } from '@simplewebauthn/browser';
+import { safeNext } from '@/lib/sso';
 export default function AccessButtons(){
  const [supported,setSupported]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{setSupported(!!window.PublicKeyCredential)},[]);
- async function post(path:string,data:unknown){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(!r.ok)throw new Error(j.error || 'Please try again.');return j;}
- async function enter(passkey:boolean){setBusy(true);setError('');try{if(passkey){const options=await post('/api/auth/passkey/options',{purpose:'login'});const response=await startAuthentication({optionsJSON:options});await post('/api/auth/passkey/verify',{purpose:'login',response});}else await post('/api/auth/explore',{});
- const next=new URLSearchParams(window.location.search).get('next');window.location.href=next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
- }catch(e){setError(e instanceof Error?e.message:'Secure unlock was cancelled.');setBusy(false);}}
- return <div style={{display:'grid',gap:12,marginBottom:20}}>
- {supported && <button type="button" className="btn block" disabled={busy} onClick={()=>enter(true)}>Unlock securely</button>}
- <button type="button" className="btn block" disabled={busy} onClick={()=>enter(false)}>Get started — explore first</button>
- <p style={{fontSize:13,lineHeight:1.5,margin:0}}>Unlock with an enrolled passkey using your device’s face, fingerprint or PIN. New here? Explore first and complete checks when a service needs them.</p>
- {error && <p role="alert" style={{color:'#ff998d'}}>{error}</p>}
- </div>;
+ async function post(path:string,data:unknown){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),signal:AbortSignal.timeout(15000)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Secure unlock is temporarily unavailable. Use email sign-in or retry.');return j;}
+ async function unlock(){setBusy(true);setError('');try{const options=await post('/api/auth/passkey/options',{purpose:'login'});const response=await startAuthentication({optionsJSON:options});await post('/api/auth/passkey/verify',{purpose:'login',response});window.location.assign(safeNext(new URLSearchParams(window.location.search).get('next')));}catch(e){setError(e instanceof Error&&e.name==='NotAllowedError'?'Device unlock was cancelled or timed out. Retry or use your email and password.':e instanceof Error?e.message:'Secure unlock could not be completed.');setBusy(false);}}
+ return <div className="passkey-access">{supported&&<div className="passkey-row"><button type="button" className="biometric-unlock" aria-label="Unlock with an enrolled device passkey" title="Unlock with face, fingerprint or device PIN" disabled={busy} onClick={()=>void unlock()}><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="M4 9a8 8 0 0 1 16 0M7 10a5 5 0 0 1 10 0v3c0 3-1 5-2 7M10 10a2 2 0 0 1 4 0v3c0 4-2 7-3 8M10 13c0 2-1 5-3 7M4 12c0 3-1 5-1 6M7 13c0 2 0 4-1 5M20 12c0 3-1 6-2 8"/></svg></button><span>{busy?'Unlocking…':'Use your enrolled passkey'}</span></div>}{error&&<div role="alert" className="access-error"><p>{error}</p><button type="button" disabled={busy} onClick={()=>void unlock()}>Retry unlock</button><button type="button" onClick={()=>setError('')}>Use email sign-in</button><button type="button" onClick={()=>setError('')}>Cancel</button></div>}</div>;
 }

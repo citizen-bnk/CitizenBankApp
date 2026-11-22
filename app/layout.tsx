@@ -1,3 +1,4 @@
+import ServiceNotice from "@/components/ServiceNotice";
 import type { Metadata, Viewport } from "next";
 import DemoBanner from "@/components/DemoBanner";
 
@@ -13,7 +14,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
   themeColor: "#07060d",
 };
@@ -24,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body>
+        <ServiceNotice/>
         {children}
         <DemoBanner />
         <AccessPanel />

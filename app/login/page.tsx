@@ -11,15 +11,15 @@ export default function LoginPage() {
       <div className="auth-card">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="auth-logo" src="/brand/logo.png" alt="Citizen Bank" />
-        <h1>Welcome back</h1>
-        <p className="sub">Sign in to talk to Citizen AI and manage your money.</p>
+        <span className="access-eyebrow">ONE CITIZEN. MANY POSSIBILITIES.</span><h1>Welcome to Citizen Bank</h1>
+        <p className="sub">Your customer profile, banking services and connected Citizen workspaces.</p>
         <Suspense>
           <LoginForm />
         </Suspense>
       </div>
       <p className="legal">
         Citizen Digital Ltd (Reg. 99073) is the applicant for a Central Bank of Lesotho banking licence and does not
-        currently carry on banking business. This is a pre-licensing demonstration of the proposed Citizen Bank.
+        currently carry on banking business. Banking accounts remain dormant until the required approvals.
       </p>
     </main>
   );

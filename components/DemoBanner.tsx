@@ -1,7 +1,7 @@
 /** Small fixed label shown on every page when NEXT_PUBLIC_DEMO_BANNER is set. It never affects page layout. */
 export default function DemoBanner() {
   const text = process.env.NEXT_PUBLIC_DEMO_BANNER;
-  if (!text) return null;
+  if (process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN !== "true" || !text || text === "false") return null;
   return (
     <div
       role="note"

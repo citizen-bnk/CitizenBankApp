@@ -84,7 +84,7 @@ export default function Statement({ accountId }: { accountId: string }) {
             </table>
           </div>
           <p className="legal" style={{ textAlign: "left", maxWidth: "none" }}>
-            Pre-licensing demonstration statement issued by Citizen Digital Ltd (Reg. 99073). Not a statement from a licensed bank.
+            Pre-licensing account record issued by Citizen Digital Ltd (Reg. 99073). This is not a statement from a licensed bank.
           </p>
         </>
       )}
